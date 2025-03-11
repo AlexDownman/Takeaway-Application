@@ -1,5 +1,5 @@
 # Inventory-Application
 Group Project
-Alex
-Teoman
+Alex,
+Teoman,
 Shayon
