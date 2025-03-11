@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class HelloApplication extends Application {
+    //THIS TOOK SO LONG TO MAKE HOLY SHIT
     @Override
     public void start(Stage stage) throws IOException {
         //FXML file contains details about the styling of the scene/s
