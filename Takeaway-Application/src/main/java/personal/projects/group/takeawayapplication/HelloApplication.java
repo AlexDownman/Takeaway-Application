@@ -22,7 +22,7 @@ public class HelloApplication extends Application {
         String test;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         //launch calls start method
 //        launch();
         new ConnectionHandler();
