@@ -28,6 +28,12 @@ public class ConnectionHandler {
 
             System.out.println("Connection Successful");
 
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM ItemTable");
+
+            while (rs.next()) {
+                System.out.println(rs.getString(1));
+            }
         } catch (SQLException e) {
 
             System.out.println("Error Connecting to Database");
