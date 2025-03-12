@@ -1,8 +1,8 @@
 module personal.projects.group.takeawayapplication {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.sql;
     requires java.desktop;
+    requires org.xerial.sqlitejdbc;
 
 
     opens personal.projects.group.takeawayapplication to javafx.fxml;

@@ -1,6 +1,6 @@
 package personal.projects.group.takeawayapplication;
 
-import SQLConnectionHandler.ConnectionHandler;
+import DatabaseManager.ConnectionHandler;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
