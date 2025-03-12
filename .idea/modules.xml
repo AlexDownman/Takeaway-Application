@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Takeaway-Application.iml" filepath="$PROJECT_DIR$/.idea/Takeaway-Application.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Takeaway-Application/Takeaway-Application.iml" filepath="$PROJECT_DIR$/Takeaway-Application/Takeaway-Application.iml" />
     </modules>
   </component>
 </project>

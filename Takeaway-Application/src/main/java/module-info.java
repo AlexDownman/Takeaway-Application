@@ -1,6 +1,7 @@
 module personal.projects.group.takeawayapplication {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.sql;
 
 
     opens personal.projects.group.takeawayapplication to javafx.fxml;

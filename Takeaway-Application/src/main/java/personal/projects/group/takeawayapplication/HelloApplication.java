@@ -1,5 +1,6 @@
 package personal.projects.group.takeawayapplication;
 
+import SQLConnectionHandler.ConnectionHandler;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -8,7 +9,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class HelloApplication extends Application {
-    //THIS TOOK SO LONG TO MAKE HOLY SHIT
     @Override
     public void start(Stage stage) throws IOException {
         //FXML file contains details about the styling of the scene/s
@@ -24,6 +24,7 @@ public class HelloApplication extends Application {
 
     public static void main(String[] args) {
         //launch calls start method
-        launch();
+//        launch();
+        new ConnectionHandler();
     }
 }
