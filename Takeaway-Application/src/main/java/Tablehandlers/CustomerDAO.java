@@ -1,168 +1,155 @@
 package Tablehandlers;
+
 import DatabaseManager.DatabaseConnection;
 import DatabaseManager.DatabaseHandler;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerDAO extends DatabaseHandler implements TableHandlerInterface {
-    private final Connection connection = this.getConnection();
+    private final Connection connection;
 
     public CustomerDAO() throws IOException {
         super();
+        this.connection = getConnection();
+    }
+
+    /**
+     * Executes a query to retrieve a single column from the CustomerTable.
+     *
+     * @param columnName the name of the column to retrieve
+     * @return an array of values from the specified column
+     * @throws SQLException if a database error occurs
+     */
+    private String[] fetchColumnValues(String columnName) throws SQLException {
+        List<String> valuesList = new ArrayList<>();
+        String sql = "SELECT " + columnName + " FROM CustomerTable";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                valuesList.add(rs.getString(columnName));
+            }
+        }
+        return valuesList.toArray(new String[0]);
     }
 
     public String[] getAllCustomerNames() throws SQLException {
-        // Use ArrayList to dynamically collect names
-        List<String> namesList = new ArrayList<>();
-
-        // Prepare the SQL query
-        String customerNameSQL = "SELECT CustomerName FROM CustomerTable";
-
-        // Use try-with-resources to properly handle resources
-        try (Statement stmt = this.connection.createStatement();
-             ResultSet rs = stmt.executeQuery(customerNameSQL)) {
-
-            // Iterate through all results
-            while (rs.next()) {
-                namesList.add(rs.getString("CustomerName"));
-            }
-        }
-
-        // Convert ArrayList to array and return
-        return namesList.toArray(new String[0]);
+        return fetchColumnValues("CustomerName");
     }
 
     public String[] getAllCustomerPhoneNums() throws SQLException {
-        String getter_SQL = "SELECT PhoneNum FROM CustomerTable";
-        List<String> phoneNumsList = new ArrayList<>();
-
-        try (Statement stmt = this.connection.createStatement();
-        ResultSet rs = stmt.executeQuery(getter_SQL)) {
-            while (rs.next()) {
-                phoneNumsList.add(rs.getString("PhoneNum"));
-            }
-        }
-        return phoneNumsList.toArray(new String[0]);
+        return fetchColumnValues("Phone");
     }
 
     public String[] getAllCustomerEmails() throws SQLException {
-        String getter_SQL = "SELECT Email FROM CustomerTable";
-        List<String> emailsList = new ArrayList<>();
-        try (Statement stmt = this.connection.createStatement();
-        ResultSet rs = stmt.executeQuery(getter_SQL)) {
-            while (rs.next()) {
-                emailsList.add(rs.getString("Email"));
-            }
-        }
-        return emailsList.toArray(new String[0]);
+        return fetchColumnValues("Email");
     }
 
     public String[] getAllCustomerAddress() throws SQLException {
-        String getter_SQL = "SELECT Address FROM CustomerTable";
-        List<String> addressList = new ArrayList<>();
-        try (Statement stmt = this.connection.createStatement();
-        ResultSet rs = stmt.executeQuery(getter_SQL)) {
-            while (rs.next()) {
-                addressList.add(rs.getString("Address"));
-            }
-        }
-        return addressList.toArray(new String[0]);
+        return fetchColumnValues("Address");
     }
 
     public String[] getAllCustomerPostcodes() throws SQLException {
-        String getter_SQL = "SELECT Postcode FROM CustomerTable";
-        List<String> postcodeList = new ArrayList<>();
-        try (Statement stmt = this.connection.createStatement();
-        ResultSet rs = stmt.executeQuery(getter_SQL)) {
-            while (rs.next()) {
-                postcodeList.add(rs.getString("Postcode"));
-            }
-        }
-        return postcodeList.toArray(new String[0]);
+        return fetchColumnValues("Postcode");
     }
 
-    public void addCustomer(String name, String phone, String email, String address, String postcode) throws DatabaseConnection {
-        Validations.isValidCustomerName(name);
-        Validations.isValidPhoneNumber(phone);
-        Validations.isValidEmail(email);
-        Validations.isValidAddress(address);
-        Validations.isValidPostCode(postcode);
-
-        String sql = "INSERT INTO CustomerTable (CustomerName, PhoneNum, email, address, postcode) VALUES (?, ?, ?, ?, ?)";
-
-        try {
-            if (this.getConnection() == null) {
-                throw new DatabaseConnection("Database connection does not exist.");
-            }
-
-            if (!(Validations.isValidCustomerName(name)
-                    && Validations.isValidPhoneNumber(phone)
-                    && Validations.isValidEmail(email)
-                    && Validations.isValidAddress(address)
-                    && Validations.isValidPostCode(postcode))) {
-                throw new DatabaseConnection("Invalid input");
-            }
-            try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
-                pstmt.setString(1, name);
-                pstmt.setString(2, phone);
-                pstmt.setString(3, email);
-                pstmt.setString(4, address);
-                pstmt.setString(5, postcode);
-                pstmt.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
-
-        } catch (DatabaseConnection e) {
-            throw new DatabaseConnection(e.getMessage());
+    /**
+     * Adds a customer to the database after validation and normalization.
+     *
+     * @param customer the customer to add
+     * @throws DatabaseConnection if the database connection fails or input is invalid
+     */
+    public void addCustomer(Customer customer) throws DatabaseConnection {
+        if (connection == null) {
+            throw new DatabaseConnection("Database connection does not exist.");
         }
+
+        if (!customer.isValid()) {
+            throw new DatabaseConnection("Invalid customer data: " + customer);
+        }
+
+        String sql = "INSERT INTO CustomerTable (CustomerName, PhoneNum, Email, Address, Postcode) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, customer.getName());
+            pstmt.setString(2, customer.getPhone()); // Already normalized
+            pstmt.setString(3, customer.getEmail());
+            pstmt.setString(4, customer.getAddress());
+            pstmt.setString(5, customer.getPostcode());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseConnection("Failed to add customer: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Retrieves all customers from the database.
+     *
+     * @return a list of all customers
+     * @throws SQLException if a database error occurs
+     */
+    public List<Customer> getAllCustomers() throws SQLException {
+        List<Customer> customers = new ArrayList<>();
+        String sql = "SELECT CustomerName, PhoneNum, Email, Address, Postcode FROM CustomerTable";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                customers.add(new Customer(
+                        rs.getString("CustomerName"),
+                        rs.getString("PhoneNum"),
+                        rs.getString("Email"),
+                        rs.getString("Address"),
+                        rs.getString("Postcode")
+                ));
+            }
+        }
+        return customers;
     }
 
     @Override
     public void updateTable() {
-
+        // TODO: Implement update logic
     }
 
     @Override
     public void deleteTable() {
-
+        // TODO: Implement delete logic
     }
 
     @Override
-    public void insertTable(CustomerTableColumns[] Columns, String... ValuesArray) {
-
+    public void insertTable(CustomerTableColumns[] columns, String... valuesArray) {
+        // TODO: Implement insert logic
     }
 
     @Override
     public void readTable(String searchValue) {
-
+        // TODO: Implement search logic
     }
 
     @Override
     public void readAllTable() {
-
+        // TODO: Implement read all logic
     }
 
-    public static void main(String[] args) throws IOException, SQLException {
-        CustomerDAO cust = new CustomerDAO();
+    public static void main(String[] args) throws IOException {
+        try {
+            CustomerDAO dao = new CustomerDAO();
 
-        String[] customerNames = cust.getAllCustomerNames();
+            List<Customer> customers = dao.getAllCustomers();
+            System.out.println(customers.get(0).getPhone()); // Outputs: 0740748321
+            for (Customer customer : customers) {
+                System.out.println(customer);
+            }
 
-        for (String customerName : customerNames) {
-            System.out.println(customerName);
+        } catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage());
         }
-
-        cust.addCustomer("Test", "222", "dsfkmsd", "asdas", "sdvds");
-
-
-        //cust.addCustomer("Shayon", "0740748321", "shayondharr@gmail.com", "20 Rainbow Crossing, Leeds", "CF33 4AF");
     }
-
 }
