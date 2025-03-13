@@ -22,7 +22,7 @@ public class ConnectionHandler {
 
         //create the database path
         String dbPath = dbFile.getAbsolutePath();
-        String url = "jdbc:sqlite:" + dbPath;
+        String url = SQLCommonConstants.DATABASE_URL + dbPath;
 
         //try creating the connection
         try {
