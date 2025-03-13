@@ -36,25 +36,38 @@ public class DatabaseHandler {
             PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM " + tableName);
             ResultSet rs = pStatement.executeQuery();
 
-            // Print column names for debugging
+            // Get metadata for column information
             int columnCount = rs.getMetaData().getColumnCount();
-            System.out.println("Columns in " + tableName + ":");
+            List<String> columnNames = new ArrayList<>();
+            List<Integer> columnWidths = new ArrayList<>();
+
+            // Calculate maximum width for each column
             for (int i = 1; i <= columnCount; i++) {
-                System.out.print(rs.getMetaData().getColumnName(i) + " (" +
-                        rs.getMetaData().getColumnTypeName(i) + ") ");
+                String colName = rs.getMetaData().getColumnName(i);
+                columnNames.add(colName);
+                columnWidths.add(Math.max(colName.length(), 15)); // Minimum width of 15
             }
-            System.out.println();
+
+            // Print table header
+            printDivider(columnWidths);
+            printRow(columnNames, columnWidths, "|");
+            printDivider(columnWidths);
 
             // Print rows
             while (rs.next()) {
-                System.out.printf("%s %s %s %s\n", rs.getString(1), rs.getString(2),
-                        rs.getString(3),
-                        rs.getString(4)); // Adjust based on your table structure
+                List<String> rowData = new ArrayList<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    String value = rs.getString(i);
+                    rowData.add(value != null ? value : "NULL");
+                }
+                printRow(rowData, columnWidths, "|");
             }
+            printDivider(columnWidths);
 
             rs.close();
             pStatement.close();
         } catch (SQLException e) {
+            // Handle any SQL exceptions that might occur
             System.out.println("SQL Error: " + e.getMessage());
         }
     }
@@ -116,7 +129,33 @@ public class DatabaseHandler {
         return result;
     }
 
+    /**
+     * Ends the connection.
+     */
     public void closeConnection() {
         connectionHandler.closeConnection();
+    }
+
+    /**
+     * Prints a formatted row with specified widths and separator.
+     */
+    private void printRow(List<String> data, List<Integer> widths, String separator) {
+        for (int i = 0; i < data.size(); i++) {
+            System.out.printf("%s %-" + widths.get(i) + "s ", separator, data.get(i));
+        }
+        System.out.println(separator);
+    }
+
+    /**
+     * Prints a divider line based on column widths.
+     */
+    private void printDivider(List<Integer> widths) {
+        for (int width : widths) {
+            System.out.print("+");
+            for (int i = 0; i < width + 2; i++) { // +2 for padding
+                System.out.print("-");
+            }
+        }
+        System.out.println("+");
     }
 }
