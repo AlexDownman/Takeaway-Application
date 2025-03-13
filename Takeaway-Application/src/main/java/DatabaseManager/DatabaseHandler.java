@@ -9,11 +9,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseHandler {
+public class DatabaseHandler extends ConnectionHandler {
     private ConnectionHandler connectionHandler;
     private Connection connection;
 
-    public DatabaseHandler() {
+    public DatabaseHandler() throws IOException {
+        super();
         try {
             this.connectionHandler = new ConnectionHandler();
             this.connection = connectionHandler.getConnection();
