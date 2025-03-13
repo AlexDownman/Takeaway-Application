@@ -11,26 +11,25 @@ public class ConnectionHandler {
     private Connection connection;
 
     public ConnectionHandler() throws IOException {
-        // Check for Takeaway.db in the current directory only
+        //check for Takeaway.db in the current directory only
         File dbFile = new File("Takeaway-Application/src/Takeaway.db");
 
-        //if file doesnt exist
+        //if file doesn't exist
         if (!dbFile.exists()) {
             throw new IOException("Database file 'Takeaway.db' not found in current directory: " +
                     new File(".").getAbsolutePath());
         }
 
-        //create db path
+        //create the database path
         String dbPath = dbFile.getAbsolutePath();
         String url = "jdbc:sqlite:" + dbPath;
 
-        //try creating connection
+        //try creating the connection
         try {
             connection = DriverManager.getConnection(url);
             System.out.println("Connection Successful to: " + dbPath);
         } catch (SQLException e) {
             System.out.println("Error Connecting to Database: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -45,13 +44,13 @@ public class ConnectionHandler {
                 connection.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error Disconnecting to Database: " + e.getMessage());
         }
     }
 
     public static void main(String[] args) throws IOException {
         DatabaseHandler dbHandler = new DatabaseHandler();
-        dbHandler.pullTable("ItemTable"); // Pass table name without quotes
+        dbHandler.pullTable("ItemTable");
         dbHandler.closeConnection();
     }
 }
