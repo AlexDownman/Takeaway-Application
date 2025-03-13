@@ -89,28 +89,26 @@ public class CustomerDAO extends DatabaseHandler implements TableHandlerInterfac
     }
 
     public void addCustomer(String name, String phone, String email, String address, String postcode) throws DatabaseConnection {
+        Validations.isValidCustomerName(name);
+        Validations.isValidPhoneNumber(phone);
+        Validations.isValidEmail(email);
+        Validations.isValidAddress(address);
+        Validations.isValidPostCode(postcode);
+
         String sql = "INSERT INTO CustomerTable (CustomerName, PhoneNum, email, address, postcode) VALUES (?, ?, ?, ?, ?)";
 
         try {
             if (this.getConnection() == null) {
                 throw new DatabaseConnection("Database connection does not exist.");
             }
-            if (name == null || name.isEmpty()) {
-                throw new DatabaseConnection("Customer name cannot be empty");
-            }
-            if (phone == null || phone.isEmpty()) {
-                throw new DatabaseConnection("Customer phone cannot be empty");
-            }
-            if (email == null || email.isEmpty()) {
-                throw new DatabaseConnection("Customer email cannot be empty");
-            }
-            if (address == null || address.isEmpty()) {
-                throw new DatabaseConnection("Customer address cannot be empty");
-            }
-            if (postcode == null || postcode.isEmpty()) {
-                throw new DatabaseConnection("Customer postcode cannot be empty");
-            }
 
+            if (!(Validations.isValidCustomerName(name)
+                    && Validations.isValidPhoneNumber(phone)
+                    && Validations.isValidEmail(email)
+                    && Validations.isValidAddress(address)
+                    && Validations.isValidPostCode(postcode))) {
+                throw new DatabaseConnection("Invalid input");
+            }
             try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
                 pstmt.setString(1, name);
                 pstmt.setString(2, phone);
@@ -160,6 +158,9 @@ public class CustomerDAO extends DatabaseHandler implements TableHandlerInterfac
         for (String customerName : customerNames) {
             System.out.println(customerName);
         }
+
+        cust.addCustomer("Test", "222", "dsfkmsd", "asdas", "sdvds");
+
 
         //cust.addCustomer("Shayon", "0740748321", "shayondharr@gmail.com", "20 Rainbow Crossing, Leeds", "CF33 4AF");
     }
