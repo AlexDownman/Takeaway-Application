@@ -5,10 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CustomerDAO extends DatabaseHandler {
-
-    private Statement statement = this.getConnection().createStatement();
+    private final Connection connection = this.getConnection();
+    private final Statement statement = this.getConnection().createStatement();
 
     public CustomerDAO() throws IOException, SQLException {
         super();
@@ -53,38 +55,83 @@ public class CustomerDAO extends DatabaseHandler {
 
     }
 
-    public ResultSet getAllCustomerNames() throws SQLException {
+    public String[] getAllCustomerNames() throws SQLException {
+        // Use ArrayList to dynamically collect names
+        List<String> namesList = new ArrayList<>();
+
+        // Prepare the SQL query
         String customerNameSQL = "SELECT CustomerName FROM CustomerTable";
-        return statement.executeQuery(customerNameSQL);
+
+        // Use try-with-resources to properly handle resources
+        try (Statement stmt = this.connection.createStatement();
+             ResultSet rs = stmt.executeQuery(customerNameSQL)) {
+
+            // Iterate through all results
+            while (rs.next()) {
+                namesList.add(rs.getString("CustomerName"));
+            }
+        }
+
+        // Convert ArrayList to array and return
+        return namesList.toArray(new String[0]);
     }
 
-    public ResultSet getAllCustomerPhoneNums() throws SQLException {
+    public String[] getAllCustomerPhoneNums() throws SQLException {
         String getter_SQL = "SELECT PhoneNum FROM CustomerTable";
-        return statement.executeQuery(getter_SQL);
+        List<String> phoneNumsList = new ArrayList<>();
+
+        try (Statement stmt = this.connection.createStatement();
+        ResultSet rs = stmt.executeQuery(getter_SQL)) {
+            while (rs.next()) {
+                phoneNumsList.add(rs.getString("PhoneNum"));
+            }
+        }
+        return phoneNumsList.toArray(new String[0]);
     }
 
-    public ResultSet getAllCustomerEmails() throws SQLException {
+    public String[] getAllCustomerEmails() throws SQLException {
         String getter_SQL = "SELECT Email FROM CustomerTable";
-        return statement.executeQuery(getter_SQL);
+        List<String> emailsList = new ArrayList<>();
+        try (Statement stmt = this.connection.createStatement();
+        ResultSet rs = stmt.executeQuery(getter_SQL)) {
+            while (rs.next()) {
+                emailsList.add(rs.getString("Email"));
+            }
+        }
+        return emailsList.toArray(new String[0]);
     }
 
-    public ResultSet getAllCustomerAddress() throws SQLException {
+    public String[] getAllCustomerAddress() throws SQLException {
         String getter_SQL = "SELECT Address FROM CustomerTable";
-        return statement.executeQuery(getter_SQL);
+        List<String> addressList = new ArrayList<>();
+        try (Statement stmt = this.connection.createStatement();
+        ResultSet rs = stmt.executeQuery(getter_SQL)) {
+            while (rs.next()) {
+                addressList.add(rs.getString("Address"));
+            }
+        }
+        return addressList.toArray(new String[0]);
     }
 
-    public ResultSet getAllCustomerPostcodes() throws SQLException {
+    public String[] getAllCustomerPostcodes() throws SQLException {
         String getter_SQL = "SELECT Postcode FROM CustomerTable";
-        return statement.executeQuery(getter_SQL);
+        List<String> postcodeList = new ArrayList<>();
+        try (Statement stmt = this.connection.createStatement();
+        ResultSet rs = stmt.executeQuery(getter_SQL)) {
+            while (rs.next()) {
+                postcodeList.add(rs.getString("Postcode"));
+            }
+        }
+        return postcodeList.toArray(new String[0]);
     }
 
     public static void main(String[] args) throws IOException, SQLException {
         CustomerDAO cust = new CustomerDAO();
 
-        ResultSet customerNames = cust.getAllCustomerNames();
+        String[] customerNames = cust.getAllCustomerNames();
 
-        while (customerNames.next()) {
-            System.out.println(customerNames.getString("CustomerName"));
+        for (String customerName : customerNames) {
+            System.out.println(customerName);
         }
 
         //cust.addCustomer("Shayon", "0740748321", "shayondharr@gmail.com", "20 Rainbow Crossing, Leeds", "CF33 4AF");
