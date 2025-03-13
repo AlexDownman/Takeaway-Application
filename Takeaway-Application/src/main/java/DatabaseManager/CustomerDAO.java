@@ -19,7 +19,7 @@ public class CustomerDAO extends DatabaseHandler {
 
         try {
             if (this.getConnection() == null) {
-                throw new DatabaseConnection("Database connection does not exist");
+                throw new DatabaseConnection("Database connection does not exist.");
             }
             if (name == null || name.isEmpty()) {
                 throw new DatabaseConnection("Customer name cannot be empty");
