@@ -3,8 +3,20 @@ package Tablehandlers;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A utility class providing validation and normalization methods for common data types
+ * such as names, email addresses, phone numbers, addresses, and postal codes.
+ */
 public class Validations {
 
+    /**
+     * Validates a customer name to ensure it contains only alphanumeric characters
+     * and meets length requirements.
+     *
+     * @param name the customer name to validate
+     * @return {@code true} if the name is non-empty, <= 50 characters, and contains only
+     *         alphanumeric characters; {@code false} otherwise
+     */
     public static boolean isValidCustomerName(String name) {
         if (name.trim().isEmpty() || name.length() > 50) {
             return false;
@@ -21,26 +33,65 @@ public class Validations {
         return true;
     }
 
+    /**
+     * Validates an email address based on basic length constraints.
+     * <p>
+     * Note: This is a basic check and does not verify email format compliance
+     * with RFC 5322 or similar standards.
+     *
+     * @param email the email address to validate
+     * @return {@code true} if the email is non-empty and <= 255 characters;
+     *         {@code false} otherwise
+     */
     public static boolean isValidEmail(String email) {
         return !email.trim().isEmpty() && email.length() <= 255;
     }
 
-    public static boolean isValidPhoneNumber(String phoneNumber) {
-        // Remove spaces, hyphens, and parentheses for consistent validation
-        String cleanedPhone = phoneNumber.replaceAll("[\\s()-]", "");
-
-        // UK phone regex pattern
-        String ukPhonePattern = "^(?:\\+44|0)(?:7[0-9]{9}|1[0-9]{9}|2[0-9]{9}|3[0-9]{9}|8[0-9]{9})$";
-
-        if (cleanedPhone.matches(ukPhonePattern)) {
-            return true;
+    /**
+     * Normalizes a UK phone number to the "07..." format by removing formatting
+     * characters and converting "+44" prefixes to "0".
+     *
+     * @param phoneNumber the phone number to normalize
+     * @return the normalized phone number starting with "07" if valid input;
+     *         {@code null} if the input is null or empty
+     */
+    public static String normalizePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return null;
         }
 
-        Pattern pattern = Pattern.compile(ukPhonePattern);
-        Matcher matcher = pattern.matcher(phoneNumber);
-        return matcher.matches();
+        String cleanedPhone = phoneNumber.replaceAll("[\\s()-]", "");
+        if (cleanedPhone.startsWith("+44")) {
+            cleanedPhone = "0" + cleanedPhone.substring(3);
+        }
+        return cleanedPhone;
     }
 
+    /**
+     * Validates a UK mobile phone number, accepting both "07..." and "+44..."
+     * formats. The number must consist of 11 digits starting with "07" after normalization.
+     *
+     * @param phoneNumber the phone number to validate
+     * @return {@code true} if the phone number is a valid UK mobile number;
+     *         {@code false} otherwise
+     */
+    public static boolean isValidPhoneNumber(String phoneNumber) {
+        String normalized = normalizePhoneNumber(phoneNumber);
+        if (normalized == null) {
+            return false;
+        }
+        String ukMobilePattern = "^07[0-9]{9}$";
+        return normalized.matches(ukMobilePattern);
+    }
+
+    /**
+     * Validates an address to ensure it contains only allowed characters
+     * (letters, numbers, spaces, and specific punctuation).
+     *
+     * @param address the address to validate
+     * @return {@code true} if the address matches the allowed pattern;
+     *         {@code false} otherwise
+     */
     public static boolean isValidAddress(String address) {
         // Basic address validation regex
         String addressPattern = "^[a-zA-Z0-9\\s.,#-]+$";
@@ -50,6 +101,14 @@ public class Validations {
         return matcher.matches();
     }
 
+    /**
+     * Validates a postal code, supporting both US ZIP (5 digits or 5+4) and
+     * UK postcode formats.
+     *
+     * @param postCode the postal code to validate
+     * @return {@code true} if the postal code matches either US ZIP or UK format;
+     *         {@code false} otherwise
+     */
     public static boolean isValidPostCode(String postCode) {
         // Regex for US ZIP (5 digits or 5+4) and UK postcode formats
         String usZipPattern = "^\\d{5}(-\\d{4})?$";
@@ -69,21 +128,31 @@ public class Validations {
         return false;
     }
 
+    /**
+     * Checks if an object is null.
+     *
+     * @param obj the object to check
+     * @return {@code true} if the object is null; {@code false} otherwise
+     */
     public static boolean isNull(Object obj) {
         return obj == null;
     }
 
+    /**
+     * Main method for testing validation methods.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
-        String name = "12412";
+        /*String name = "12412";
         System.out.println(isValidCustomerName(name));
 
         String phone = "dsfsdf";
         System.out.println(isValidPhoneNumber(phone));
 
-        String phone2 = "07398 890 9000";
+        String phone2 = "+447398890900";
         System.out.println(isValidPhoneNumber(phone2));
-
+        String normalised = normalizePhoneNumber(phone2);
+        System.out.println(normalised);*/
     }
-
-
 }
