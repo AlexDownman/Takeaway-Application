@@ -10,7 +10,6 @@ import java.util.List;
 
 public class CustomerDAO extends DatabaseHandler {
     private final Connection connection = this.getConnection();
-    private final Statement statement = this.getConnection().createStatement();
 
     public CustomerDAO() throws IOException, SQLException {
         super();
