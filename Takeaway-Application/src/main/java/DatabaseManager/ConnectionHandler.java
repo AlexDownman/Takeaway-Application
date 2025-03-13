@@ -48,7 +48,7 @@ public class ConnectionHandler {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, DatabaseConnection, SQLException {
         DatabaseHandler dbHandler = new DatabaseHandler();
         dbHandler.pullTable("ItemTable");
         dbHandler.closeConnection();
