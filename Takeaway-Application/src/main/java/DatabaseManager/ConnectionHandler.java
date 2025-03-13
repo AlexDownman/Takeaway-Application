@@ -12,7 +12,7 @@ public class ConnectionHandler {
 
     public ConnectionHandler() throws IOException {
         //check for Takeaway.db in the current directory only
-        File dbFile = new File("Takeaway-Application/src/Takeaway.db");
+        File dbFile = new File(SQLCommonConstants.ROOT_PATH);
 
         //if file doesn't exist
         if (!dbFile.exists()) {
