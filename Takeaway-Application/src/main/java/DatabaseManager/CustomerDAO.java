@@ -53,31 +53,35 @@ public class CustomerDAO extends DatabaseHandler {
 
     }
 
-    public ResultSet getCustomerName() throws SQLException {
+    public ResultSet getAllCustomerNames() throws SQLException {
         String customerNameSQL = "SELECT CustomerName FROM CustomerTable";
         return statement.executeQuery(customerNameSQL);
     }
 
-    public String getCustomerPhone() {
-        return "SELECT PhoneNum FROM CustomerTable";
+    public ResultSet getAllCustomerPhoneNums() throws SQLException {
+        String getter_SQL = "SELECT PhoneNum FROM CustomerTable";
+        return statement.executeQuery(getter_SQL);
     }
 
-    public String getCustomerEmail() {
-        return "SELECT email FROM CustomerTable";
+    public ResultSet getAllCustomerEmails() throws SQLException {
+        String getter_SQL = "SELECT Email FROM CustomerTable";
+        return statement.executeQuery(getter_SQL);
     }
 
-    public String getCustomerAddress() {
-        return "SELECT address FROM CustomerTable";
+    public ResultSet getAllCustomerAddress() throws SQLException {
+        String getter_SQL = "SELECT Address FROM CustomerTable";
+        return statement.executeQuery(getter_SQL);
     }
 
-    public String getCustomerPostcode() {
-        return "SELECT postcode FROM CustomerTable";
+    public ResultSet getAllCustomerPostcodes() throws SQLException {
+        String getter_SQL = "SELECT Postcode FROM CustomerTable";
+        return statement.executeQuery(getter_SQL);
     }
 
     public static void main(String[] args) throws IOException, SQLException {
         CustomerDAO cust = new CustomerDAO();
 
-        ResultSet customerNames = cust.getCustomerName();
+        ResultSet customerNames = cust.getAllCustomerNames();
 
         while (customerNames.next()) {
             System.out.println(customerNames.getString("CustomerName"));

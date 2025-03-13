@@ -9,6 +9,5 @@ public class DatabaseConnection extends SQLException {
 
     public DatabaseConnection(String message) {
         super(message);
-
     }
 }
