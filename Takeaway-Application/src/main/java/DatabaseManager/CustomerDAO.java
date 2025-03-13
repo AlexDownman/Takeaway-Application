@@ -11,7 +11,7 @@ import java.util.List;
 public class CustomerDAO extends DatabaseHandler {
     private final Connection connection = this.getConnection();
 
-    public CustomerDAO() throws IOException, SQLException {
+    public CustomerDAO() throws IOException {
         super();
     }
 
@@ -38,18 +38,19 @@ public class CustomerDAO extends DatabaseHandler {
                 throw new DatabaseConnection("Customer postcode cannot be empty");
             }
 
-            PreparedStatement pstmt = getConnection().prepareStatement(sql);
-            pstmt.setString(1, name);
-            pstmt.setString(2, phone);
-            pstmt.setString(3, email);
-            pstmt.setString(4, address);
-            pstmt.setString(5, postcode);
-            pstmt.executeUpdate();
+            try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+                pstmt.setString(1, name);
+                pstmt.setString(2, phone);
+                pstmt.setString(3, email);
+                pstmt.setString(4, address);
+                pstmt.setString(5, postcode);
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
 
         } catch (DatabaseConnection e) {
             throw new DatabaseConnection(e.getMessage());
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
         }
 
     }
