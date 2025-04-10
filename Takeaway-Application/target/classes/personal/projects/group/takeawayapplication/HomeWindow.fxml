@@ -7,7 +7,7 @@
 
 <!-- VBOX is similar to div, body, section -->
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="personal.projects.group.takeawayapplication.HelloController">
+      fx:controller="guis.HomeWindowController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
