@@ -17,8 +17,6 @@ public class JSON {
                 value = jsonToMap((JSONObject) value);
             }
 
-            // Optionally handle JSONArray too if needed
-
             map.put(key, value);
         }
         return map;
