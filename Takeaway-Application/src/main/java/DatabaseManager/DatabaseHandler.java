@@ -24,52 +24,52 @@ public class DatabaseHandler extends ConnectionHandler {
     }
 
     /**
-     * Pulls and displays data from the specified table.
-     * @param tableName The name of the table (e.g., "ItemTable")
+     * Pulls the CustomerTable in the Takeaway.db
      */
-    public void pullTable(String tableName) {
+    public void pullCustomerTable() {
         try {
             if (connection == null || connection.isClosed()) {
                 System.out.println("Connection Failed");
                 return;
             }
 
-            PreparedStatement pStatement = connection.prepareStatement("SELECT * FROM " + tableName);
-            ResultSet rs = pStatement.executeQuery();
+            String sqlString = "SELECT * FROM CustomerTable";
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlString);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
             // Get metadata for column information
-            int columnCount = rs.getMetaData().getColumnCount();
+            int columnCount = resultSet.getMetaData().getColumnCount();
             List<String> columnNames = new ArrayList<>();
             List<Integer> columnWidths = new ArrayList<>();
 
             // Calculate maximum width for each column
             for (int i = 1; i <= columnCount; i++) {
-                String colName = rs.getMetaData().getColumnName(i);
+                String colName = resultSet.getMetaData().getColumnName(i);
                 columnNames.add(colName);
                 columnWidths.add(Math.max(colName.length(), 15)); // Minimum width of 15
             }
 
             // Print table header
             printDivider(columnWidths);
-            printRow(columnNames, columnWidths, "|");
+            printRow(columnNames, columnWidths);
             printDivider(columnWidths);
 
             // Print rows
-            while (rs.next()) {
+            while (resultSet.next()) {
                 List<String> rowData = new ArrayList<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    String value = rs.getString(i);
+                    String value = resultSet.getString(i);
                     rowData.add(value != null ? value : "NULL");
                 }
-                printRow(rowData, columnWidths, "|");
+                printRow(rowData, columnWidths);
             }
             printDivider(columnWidths);
 
-            rs.close();
-            pStatement.close();
+            resultSet.close();
+            preparedStatement.close();
+
         } catch (SQLException e) {
-            // Handle any SQL exceptions that might occur
-            System.out.println("SQL Error: " + e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 
@@ -138,13 +138,13 @@ public class DatabaseHandler extends ConnectionHandler {
     }
 
     /**
-     * Prints a formatted row with specified widths and separator.
+     * Prints a formatted row with specified widths.
      */
-    private void printRow(List<String> data, List<Integer> widths, String separator) {
+    private void printRow(List<String> data, List<Integer> widths) {
         for (int i = 0; i < data.size(); i++) {
-            System.out.printf("%s %-" + widths.get(i) + "s ", separator, data.get(i));
+            System.out.printf("%s %-" + widths.get(i) + "s ", "|", data.get(i));
         }
-        System.out.println(separator);
+        System.out.println("|");
     }
 
     /**
