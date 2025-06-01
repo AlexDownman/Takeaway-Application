@@ -14,5 +14,5 @@
 
     <!-- fx:id is an identifier like html & css id/class -->
     <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
+    <Button text="Login" onAction="#onHelloButtonClick"/>
 </VBox>
