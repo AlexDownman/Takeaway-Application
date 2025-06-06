@@ -10,153 +10,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseHandler extends ConnectionHandler {
-    private ConnectionHandler connectionHandler;
-    private Connection connection;
 
+
+    public static final int MINIMUM_COL_WIDTH = 15;
+
+    /**
+     * Creates an object which handles SQL connections to the database
+     *
+     * @throws IOException
+     */
     public DatabaseHandler() throws IOException {
         super();
-        try {
-            this.connectionHandler = new ConnectionHandler();
-            this.connection = connectionHandler.getConnection();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
-    /**
-     * Pulls the CustomerTable in the Takeaway.db
-     */
-    public void pullCustomerTable() {
-        try {
-            if (connection == null || connection.isClosed()) {
-                System.out.println("Connection Failed");
-                return;
+    public void pullTable(String tableName) throws SQLException {
+        if (this.connection == null || this.connection.isClosed()) {
+            System.out.println("Connection To Database Doesn't Exist");
+            return;
+        }
+
+        PreparedStatement ps = this.connection.prepareStatement("SELECT * FROM " + tableName);
+        ResultSet rs = ps.executeQuery();
+
+        int colCount = rs.getMetaData().getColumnCount();
+
+        List<String[]> colData = new ArrayList<>();
+
+        while (rs.next()) {
+            String[] colDataRow = new String[colCount];
+            for (int i = 1; i <= colCount; i++) {
+                colDataRow[i - 1] = rs.getString(i);
             }
-
-            String sqlString = "SELECT * FROM CustomerTable";
-            PreparedStatement preparedStatement = connection.prepareStatement(sqlString);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            // Get metadata for column information
-            int columnCount = resultSet.getMetaData().getColumnCount();
-            List<String> columnNames = new ArrayList<>();
-            List<Integer> columnWidths = new ArrayList<>();
-
-            // Calculate maximum width for each column
-            for (int i = 1; i <= columnCount; i++) {
-                String colName = resultSet.getMetaData().getColumnName(i);
-                columnNames.add(colName);
-                columnWidths.add(Math.max(colName.length(), 15)); // Minimum width of 15
-            }
-
-            // Print table header
-            printDivider(columnWidths);
-            printRow(columnNames, columnWidths);
-            printDivider(columnWidths);
-
-            // Print rows
-            while (resultSet.next()) {
-                List<String> rowData = new ArrayList<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    String value = resultSet.getString(i);
-                    rowData.add(value != null ? value : "NULL");
-                }
-                printRow(rowData, columnWidths);
-            }
-            printDivider(columnWidths);
-
-            resultSet.close();
-            preparedStatement.close();
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    /**
-     * Creates a new SQLite table based on the provided table name, column definitions, and table constraints.
-     *
-     * @param tableName         The name of the table to create.
-     * @param columnDefinitions A list of column definitions (e.g., "id INTEGER PRIMARY KEY").
-     * @param tableConstraints  A list of table-level constraints (e.g., "UNIQUE (name, age)").
-     */
-    public void createTable(String tableName, List<String> columnDefinitions, List<String> tableConstraints) {
-        // Validate table name
-        if (tableName == null || tableName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Table name cannot be null or empty");
+            colData.add(colDataRow);
         }
 
-        // Validate and filter column definitions
-        List<String> validColumns = filterNonEmpty(columnDefinitions);
-        if (validColumns.isEmpty()) {
-            throw new IllegalArgumentException("At least one valid column definition is required");
-        }
+        rs.close();
+        ps.close();
 
-        // Filter table constraints (optional, so null is allowed)
-        List<String> validConstraints = filterNonEmpty(tableConstraints);
-
-        // Combine column definitions and table constraints
-        List<String> allDefinitions = new ArrayList<>(validColumns);
-        allDefinitions.addAll(validConstraints);
-
-        // Construct the SQL statement
-        String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + String.join(", ", allDefinitions) + ");";
-
-        // Execute the SQL statement
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
-            System.out.println("Table '" + tableName + "' created successfully.");
-        } catch (SQLException e) {
-            System.out.println("Error creating table: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Filters out null or empty strings from the provided list and trims the remaining strings.
-     *
-     * @param list The list of strings to filter.
-     * @return A new list containing only non-empty trimmed strings.
-     */
-    private List<String> filterNonEmpty(List<String> list) {
-        if (list == null) {
-            return new ArrayList<>();
-        }
-        List<String> result = new ArrayList<>();
-        for (String s : list) {
-            if (s != null && !s.trim().isEmpty()) {
-                result.add(s.trim());
+        for (String[] colDataRow : colData) {
+            for (String colName : colDataRow) {
+                System.out.print(colName + " ");
             }
         }
-        return result;
     }
 
-    /**
-     * Ends the connection.
-     */
-    public void closeConnection() {
-        connectionHandler.closeConnection();
-    }
-
-    /**
-     * Prints a formatted row with specified widths.
-     */
-    private void printRow(List<String> data, List<Integer> widths) {
-        for (int i = 0; i < data.size(); i++) {
-            System.out.printf("%s %-" + widths.get(i) + "s ", "|", data.get(i));
-        }
-        System.out.println("|");
-    }
-
-    /**
-     * Prints a divider line based on column widths.
-     */
-    private void printDivider(List<Integer> widths) {
-        for (int width : widths) {
-            System.out.print("+");
-            for (int i = 0; i < width + 2; i++) { // +2 for padding
-                System.out.print("-");
-            }
-        }
-        System.out.println("+");
+    public static void main(String[] args) throws IOException, SQLException {
+        DatabaseHandler dbHandler = new DatabaseHandler();
+        dbHandler.pullTable("ItemTable");
     }
 }
