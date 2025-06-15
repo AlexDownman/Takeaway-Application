@@ -1,18 +1,12 @@
 package DatabaseManager;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DatabaseHandler extends ConnectionHandler {
-
-
-    public static final int MINIMUM_COL_WIDTH = 15;
 
     /**
      * Creates an object which handles SQL connections to the database
@@ -23,10 +17,25 @@ public class DatabaseHandler extends ConnectionHandler {
         super();
     }
 
-    public void pullTable(String tableName) throws SQLException {
+    private boolean isConnectionClosed() throws SQLException {
         if (this.connection == null || this.connection.isClosed()) {
             System.out.println("Connection To Database Doesn't Exist");
-            return;
+            return true;
+        } else {
+            System.out.println("Connection Successful");
+            return false;
+        }
+    }
+
+    /**
+     * Gets an entire table as an Arraylist
+     * @param tableName String name of the table
+     * @return Arraylist of strings
+     * @throws SQLException SQL error
+     */
+    public ArrayList<String[]> pullTable(String tableName) throws SQLException {
+        if (this.isConnectionClosed()) {
+            return null;
         }
 
         PreparedStatement ps = this.connection.prepareStatement("SELECT * FROM " + tableName);
@@ -34,7 +43,7 @@ public class DatabaseHandler extends ConnectionHandler {
 
         int colCount = rs.getMetaData().getColumnCount();
 
-        List<String[]> colData = new ArrayList<>();
+        ArrayList<String[]> colData = new ArrayList<>();
 
         while (rs.next()) {
             String[] colDataRow = new String[colCount];
@@ -52,6 +61,50 @@ public class DatabaseHandler extends ConnectionHandler {
                 System.out.print(colName + " ");
             }
         }
+
+        return colData;
+    }
+
+    public void createTable (String tableName, ArrayList<String> columnDef, ArrayList<String> tableConstraints) throws SQLException {
+        if (this.isConnectionClosed()) {
+            return;
+        }
+
+        if (tableName == null ||  tableName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Table Name cannot be null or empty");
+        }
+
+        ArrayList<String> validDefinitions = filterNonEmptyStrings(columnDef);
+
+        if (validDefinitions.isEmpty()) {
+            throw new IllegalArgumentException("Column Definitions cannot be null or empty");
+        }
+
+
+
+    }
+
+    private ArrayList<String> filterValidTableConstraints(ArrayList<String> tableConstraints) {
+        if (tableConstraints == null || tableConstraints.isEmpty()) {
+            throw new IllegalArgumentException("Array List cannot be null or empty");
+        }
+
+        for (String tableConstraint : tableConstraints) {}
+
+    }
+
+    private ArrayList<String> filterNonEmptyStrings(ArrayList<String> arrayList) {
+        if (arrayList == null || arrayList.isEmpty()) {
+            throw new IllegalArgumentException("Array List cannot be null or empty");
+        }
+
+        ArrayList<String> result = new ArrayList<>();
+        for (String str : arrayList) {
+            if (str != null && !str.trim().isEmpty()) {
+                result.add(str);
+            }
+        }
+        return result;
     }
 
     public static void main(String[] args) throws IOException, SQLException {
