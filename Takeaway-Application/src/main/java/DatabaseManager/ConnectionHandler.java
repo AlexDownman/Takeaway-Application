@@ -1,5 +1,7 @@
 package DatabaseManager;
 
+import Constants.SQLConstants;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -12,33 +14,25 @@ import java.sql.SQLException;
 
 public class ConnectionHandler {
 
-    protected Connection connection;
+    public static Connection connection;
 
     /**
-     * Creates an object which handles SQL connections to the database
-     * @throws IOException
+     * Accessor for connection attribute. Don't need this since it's a public global variable
+     * @return Connection
      */
-    public ConnectionHandler() throws IOException {
-        openConnection();
-    }
-
-    /**
-     * Accessor for connection attribute
-     * @return Connection type
-     */
-    public Connection getConnection() {
-        return this.connection;
+    public static Connection getConnection() {
+        return ConnectionHandler.connection;
     }
 
     /**
      * Method establishes the connection to the sqlite database
-     * @throws IOException
+     * @throws DBOperationException : IO || SQL, Exception
      */
-    public void openConnection() throws IOException {
+    public static void openConnection() throws DBOperationException {
         File dbFile = new File(SQLConstants.DATABASE_ROOT_PATH);
 
         if (!dbFile.exists()) {
-            throw new IOException("Database file does not exist");
+            throw new DBOperationException(new IOException("Database file does not exist"));
         }
 
         String dbPath = dbFile.getAbsolutePath();
@@ -55,14 +49,33 @@ public class ConnectionHandler {
     /**
      * Method closes the Connection database
      */
-    public void closeConnection() {
+    public static void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 System.out.println("Connection closed");
-                this.connection.close();
+                ConnectionHandler.connection.close();
             }
         } catch (SQLException e) {
             System.out.println("Connection close failed\n" + e.getMessage());
+        }
+    }
+
+    /**
+     * Checks whether the SQL connection is closed.
+     * @return boolean
+     * @throws DBOperationException : IO || SQL, Exception
+     */
+    public static boolean isConnectionClosed() throws DBOperationException {
+        try {
+            if (ConnectionHandler.connection == null || ConnectionHandler.connection.isClosed()) {
+                System.out.println("Connection To Database Doesn't Exist");
+                return true;
+            } else {
+                System.out.println("Connection Successful");
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new DBOperationException(e);
         }
     }
 }

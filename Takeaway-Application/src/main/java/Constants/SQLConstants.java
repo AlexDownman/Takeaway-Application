@@ -1,4 +1,4 @@
-package DatabaseManager;
+package Constants;
 
 public class SQLConstants {
     public static final String DATABASE_URL = "jdbc:sqlite:";
