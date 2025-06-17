@@ -2,6 +2,7 @@ package DatabaseManager;
 
 import Constants.TableConstraints;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,36 +17,36 @@ public class DatabaseHandler {
      * @throws DBOperationException IO || SQL error
      */
     public static ArrayList<String[]> pullTable(String tableName) throws DBOperationException {
-        ConnectionHandler.openConnection();
 
-        if (ConnectionHandler.isConnectionClosed()) {
-            return null;
-        }
+        Connection connection = null;
+        try {
+            connection = ConnectionHandler.getConnection();
 
-        // Always use parameterized queries to prevent SQL injection
-        String query = "SELECT * FROM " + tableName;
-        try (PreparedStatement ps = ConnectionHandler.connection.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
+            String query = "SELECT * FROM " + tableName;
+            try (PreparedStatement ps = connection.prepareStatement(query);
+                 ResultSet rs = ps.executeQuery()) {
 
-            int colCount = rs.getMetaData().getColumnCount();
-            ArrayList<String[]> colData = new ArrayList<>();
+                int colCount = rs.getMetaData().getColumnCount();
+                ArrayList<String[]> colData = new ArrayList<>();
 
-            while (rs.next()) {
-                String[] colDataRow = new String[colCount];
-                for (int i = 1; i <= colCount; i++) {
-                    colDataRow[i - 1] = rs.getString(i);
+                while (rs.next()) {
+                    String[] colDataRow = new String[colCount];
+                    for (int i = 1; i <= colCount; i++) {
+                        colDataRow[i - 1] = rs.getString(i);
+                    }
+                    colData.add(colDataRow);
                 }
-                colData.add(colDataRow);
-            }
 
-            return colData;
+                return colData;
+            }
 
         } catch (SQLException e) {
             throw new DBOperationException(e);
         } finally {
-            ConnectionHandler.closeConnection();  // Optionally wrap this too if closeConnection can throw
+            if (connection != null) {
+                ConnectionHandler.releaseConnection(connection);
+            }
         }
-
     }
 
     /**
@@ -55,30 +56,59 @@ public class DatabaseHandler {
      * @param tableConstraints : List of table constraints
      * @throws DBOperationException IO || SQL, Exception
      */
-    public static void createTable (String tableName, ArrayList<String> columnDef, ArrayList<String> tableConstraints) throws DBOperationException {
+    public static void createTable(String tableName, ArrayList<String> columnDef, ArrayList<String> tableConstraints) throws DBOperationException {
 
-        ConnectionHandler.openConnection();
-
-        if (ConnectionHandler.isConnectionClosed()) {
-            return;
-        }
-
-        if (tableName == null ||  tableName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Table Name cannot be null or empty");
+        if (tableName == null || tableName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Table name cannot be null or empty");
         }
 
         ArrayList<String> validDefinitions = filterNonEmptyStrings(columnDef);
-
         if (validDefinitions.isEmpty()) {
-            throw new IllegalArgumentException("Column Definitions cannot be null or empty");
+            throw new IllegalArgumentException("Column definitions cannot be null or empty");
         }
 
         ArrayList<String> validConstraints = filterValidTableConstraints(tableConstraints);
 
-        if (validConstraints.isEmpty()) {
-            throw new IllegalArgumentException("Table Constraints cannot be null or empty");
+        // Build CREATE TABLE SQL
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" (");
+
+        // Add column definitions
+        for (int i = 0; i < validDefinitions.size(); i++) {
+            queryBuilder.append(validDefinitions.get(i));
+            if (i < validDefinitions.size() - 1 || !validConstraints.isEmpty()) {
+                queryBuilder.append(", ");
+            }
+        }
+
+        // Add table constraints
+        for (int i = 0; i < validConstraints.size(); i++) {
+            queryBuilder.append(validConstraints.get(i));
+            if (i < validConstraints.size() - 1) {
+                queryBuilder.append(", ");
+            }
+        }
+
+        queryBuilder.append(");");
+        String finalQuery = queryBuilder.toString();
+
+        // Execute SQL
+        Connection connection = null;
+        try {
+            connection = ConnectionHandler.getConnection();
+            try (PreparedStatement ps = connection.prepareStatement(finalQuery)) {
+                ps.execute();
+                System.out.println("Table '" + tableName + "' created or already exists.");
+            }
+        } catch (SQLException e) {
+            throw new DBOperationException(e);
+        } finally {
+            if (connection != null) {
+                ConnectionHandler.releaseConnection(connection);
+            }
         }
     }
+
 
     /**
      * Filter method to remove empty and invalid table constraints from user input
@@ -86,6 +116,11 @@ public class DatabaseHandler {
      * @return Validated constraints
      */
     private static ArrayList<String> filterValidTableConstraints(ArrayList<String> tableConstraints) {
+
+        if (tableConstraints.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         Iterator<String> iterator = tableConstraints.iterator();
 
         while (iterator.hasNext()) {
@@ -118,6 +153,8 @@ public class DatabaseHandler {
     }
 
     public static void main(String[] args) throws DBOperationException {
+        ConnectionHandler.init();
+
         ArrayList<String[]> yeah = DatabaseHandler.pullTable("CustomerTable");
 
         assert yeah != null;
