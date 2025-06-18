@@ -13,7 +13,7 @@ public class ConnectionPool {
     private final int poolSize;
 
     /**
-     * Instaniate a connection pool
+     * Instantiate a connection pool
      * @param url : Dont need since its SQLite
      * @param user : ^
      * @param password : ^
@@ -61,7 +61,7 @@ public class ConnectionPool {
         try {
             Connection connection = connectionPool.take();
 
-            if (connection == null || !isConnectionValid(connection)) {
+            if (!isConnectionValid(connection)) {
                 connection = createNewConnection();
             }
 
