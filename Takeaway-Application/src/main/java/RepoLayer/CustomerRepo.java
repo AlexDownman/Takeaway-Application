@@ -4,6 +4,7 @@ import DatabaseManager.ConnectionHandler;
 import DatabaseManager.DBOperationException;
 import EntityClasses.Customer;
 import RepoLayer.RepoInterfaces.CustomerInterface;
+import CacheLayer.Cache;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,9 +13,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static Constants.SQLConstants.UNIQUE_ERROR_CODE;
+
 public class CustomerRepo implements CustomerInterface {
 
-    public static final String UNIQUE_ERROR_CODE = "23000";
 
     @Override
     public void addCustomer(Customer user) throws Exception {
@@ -27,6 +29,9 @@ public class CustomerRepo implements CustomerInterface {
             stmt.setString(4, user.getAddress());
             stmt.setString(5, user.getPostCode());
             stmt.executeUpdate();
+
+            Cache.addOrUpdateCustomer(user);
+
         } catch (SQLException ex) {
             if (UNIQUE_ERROR_CODE.equals(ex.getSQLState()) && ex.getMessage().contains("UNIQUE constraint failed")) {
                 throw new DBOperationException(ex);
@@ -56,7 +61,7 @@ public class CustomerRepo implements CustomerInterface {
                 );
             }
             return null;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new DBOperationException(e);
         }
     }
@@ -101,13 +106,15 @@ public class CustomerRepo implements CustomerInterface {
             stmt.setInt(6, user.getId());
             stmt.executeUpdate();
 
+            Cache.addOrUpdateCustomer(user);
+
         } catch (SQLException e) {
             throw new DBOperationException(e);
         }
     }
 
     @Override
-    public void deleteCustomer(int id) throws DBOperationException {
+    public void deleteCustomer(int id) throws Exception {
         String sql = "DELETE FROM CustomerTable WHERE CustomerID = ?";
         try (Connection conn = ConnectionHandler.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -115,6 +122,7 @@ public class CustomerRepo implements CustomerInterface {
             stmt.setInt(1, id);
             stmt.executeUpdate();
 
+            Cache.deleteCustomer(id);
         } catch (SQLException e) {
             throw new DBOperationException(e);
         }
